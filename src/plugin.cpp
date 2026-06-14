@@ -83,6 +83,26 @@ std::vector<SpellItem*> GetSortedListItems(BGSListForm* a_list) {
     return result;
 }
 
+std::string FormatDescription(const std::string_view input) {
+    std::string result;
+
+    for (char c : input) {
+        switch (c) {
+            case '<':
+                result += "<b>";
+                break;
+            case '>':
+                result += "</b>";
+                break;
+            default:
+                result += c;
+                break;
+        }
+    }
+
+    return result;
+}
+
 void PopulateTraitsList(StaticFunctionTag*, BGSListForm* a_list) {
     if (!a_list) return;
     auto ui = RE::UI::GetSingleton();
@@ -98,7 +118,7 @@ void PopulateTraitsList(StaticFunctionTag*, BGSListForm* a_list) {
         args[0].SetString(spell->GetName());
         BSString description;
         spell->GetDescription(description, spell);
-        args[1].SetString(description.c_str());
+        args[1].SetString(FormatDescription(description).c_str());
         args[2].SetString("TraitPics/" + clib_util::editorID::get_editorID(spell) + ".dds");
         view->Invoke("_root.Traits_mc.addItem", nullptr, args, 3);
     }
