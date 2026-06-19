@@ -139,6 +139,30 @@ std::vector<SpellItem*> GetTraitsAtIndexes(StaticFunctionTag*, BGSListForm* a_li
     return result;
 }
 
+void InjectMasterofOne(StaticFunctionTag*, int a_hotkey) {
+    const auto ui = RE::UI::GetSingleton();
+    if (!ui) return;
+    const auto menu = ui->GetMenu(StatsMenu::MENU_NAME);
+    if (!menu) return;
+    const auto movie = menu->uiMovie;
+    if (!movie) return;
+
+    RE::GFxValue _root;
+    movie->GetVariable(&_root, "_root");
+
+    _root.SetMember("Traits_Hotkey", GFxValue(a_hotkey));
+
+    RE::GFxValue args[2];
+    args[0] = RE::GFxValue("MasterofOne");
+    args[1] = RE::GFxValue(4501);
+    _root.Invoke("createEmptyMovieClip", nullptr, args, 2);
+    if (movie->GetVariable(&_root, "_root.MasterofOne")) {
+        RE::GFxValue args2[1];
+        args2[0] = RE::GFxValue("masterofone_inject.swf");
+        _root.Invoke("loadMovie", nullptr, args2, 1);
+    }
+}
+
 bool PapyrusBinder(RE::BSScript::IVirtualMachine* vm) {
     std::string_view script = "Traits_Utils"sv;
 
@@ -146,6 +170,7 @@ bool PapyrusBinder(RE::BSScript::IVirtualMachine* vm) {
     vm->RegisterFunction("RevertStripSkillTeaching", script, RevertStripSkillTeaching);
     vm->RegisterFunction("PopulateTraitsList", script, PopulateTraitsList);
     vm->RegisterFunction("GetTraitsAtIndexes", script, GetTraitsAtIndexes);
+    vm->RegisterFunction("InjectMasterofOne", script, InjectMasterofOne);
 
     return false;
 }

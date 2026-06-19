@@ -25,12 +25,22 @@ class MasterOfOne extends MovieClip {
 
     function onLoad() {
         Shared.GlobalFunc.MaintainTextFormat();
-
 		Menu_mc = _parent._parent.StatsMenuBaseInstance;
         AnimatingSkillTextInstance = Menu_mc.AnimatingSkillTextInstance;
         DescriptionCardInstance = Menu_mc.DescriptionCardInstance;
 
         duckPunch();
+        render();
+    }
+
+    function render() {
+        Btn_mc.Hotkey_mc.gotoAndStop(_root.Traits_Hotkey);
+        Btn_mc.Label_tf.autoSize = 'left';
+        Btn_mc.Label_tf._x = Btn_mc.Hotkey_mc._x + Btn_mc.Hotkey_mc._width;
+        Btn_mc.Label_tf.SetText("$BIGTRAIT_SELECTSKILL");
+        Btn_mc._x -= Btn_mc._width / 2;
+        reposition();
+        updateSkill();
     }
 
     function duckPunch() {
@@ -76,16 +86,5 @@ class MasterOfOne extends MovieClip {
         Menu_mc.localToGlobal( points2 );
         _x = points2.x;
         _y = points.y - _height - yOffset;
-    }
-
-    // @api
-    function setHotkey(a_keycode:String, a_label:String) {
-        Btn_mc.Hotkey_mc.gotoAndStop(parseInt(a_keycode));
-        Btn_mc.Label_tf.autoSize = 'left';
-        Btn_mc.Label_tf._x = Btn_mc.Hotkey_mc._x + Btn_mc.Hotkey_mc._width;
-        Btn_mc.Label_tf.SetText(a_label);
-        Btn_mc._x -= Btn_mc._width / 2;
-        reposition();
-        updateSkill();
     }
 }
