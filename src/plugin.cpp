@@ -163,6 +163,12 @@ void InjectMasterofOne(StaticFunctionTag*, int a_hotkey) {
     }
 }
 
+int GetCurrentSkillInStatsMenu(StaticFunctionTag*) {
+    auto menu = UI::GetSingleton()->GetMenu<StatsMenu>();
+    if (!menu) return -1;
+    return menu->GetRuntimeData().selectedTree;
+}
+
 bool PapyrusBinder(RE::BSScript::IVirtualMachine* vm) {
     std::string_view script = "Traits_Utils"sv;
 
@@ -171,6 +177,7 @@ bool PapyrusBinder(RE::BSScript::IVirtualMachine* vm) {
     vm->RegisterFunction("PopulateTraitsList", script, PopulateTraitsList);
     vm->RegisterFunction("GetTraitsAtIndexes", script, GetTraitsAtIndexes);
     vm->RegisterFunction("InjectMasterofOne", script, InjectMasterofOne);
+    vm->RegisterFunction("GetCurrentSkillInStatsMenu", script, GetCurrentSkillInStatsMenu);
 
     return false;
 }
