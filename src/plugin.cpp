@@ -169,6 +169,91 @@ int GetCurrentSkillInStatsMenu(StaticFunctionTag*) {
     return menu->GetRuntimeData().selectedTree;
 }
 
+template <typename T>
+bool compare(T a, T b, const std::string& op) {
+    if (op == "=" || op == "==") return a == b;
+    if (op == "<") return a < b;
+    if (op == "<=") return a <= b;
+    if (op == ">") return a > b;
+    if (op == ">=") return a >= b;
+    if (op == "!=") return a != b;
+    return false;
+}
+
+int GetSpellMinimumSkillLevel(SpellItem* a_spell) {
+    if (!a_spell) return 0;
+    int min = 0;
+    for (auto effect : a_spell->effects) {
+        auto minLevel = effect->baseEffect->GetMinimumSkillLevel();
+        if (minLevel > min) {
+            min = minLevel;
+        }
+    }
+
+    return min;
+}
+
+std::vector<SpellItem*> GetAllSpells(StaticFunctionTag*, BSFixedString a_skill = "", int a_minSkill = 0,
+                                     std::string a_minSkillComp = "=", int a_max = 0) {
+    std::vector<SpellItem*> result;
+    const auto& all = TESDataHandler::GetSingleton()->GetFormArray<TESObjectBOOK>();
+    ActorValue av = ActorValue::kNone;
+    if (a_skill == "destruction") {
+        av = ActorValue::kDestruction;
+    } else if (a_skill == "alteration") {
+        av = ActorValue::kAlteration;
+    } else if (a_skill == "conjuration") {
+        av = ActorValue::kConjuration;
+    } else if (a_skill == "restoration") {
+        av = ActorValue::kRestoration;
+    } else if (a_skill == "illusion") {
+        av = ActorValue::kIllusion;
+    }
+
+    for (auto book : all) {
+        if (!book->TeachesSpell()) continue;
+        if (auto spell = book->GetSpell(); spell) {
+            if (av != ActorValue::kNone && spell->GetAssociatedSkill() != av) continue;
+            if (a_minSkill > 0 && !compare(GetSpellMinimumSkillLevel(spell), a_minSkill, a_minSkillComp))
+                continue;
+            result.push_back(spell);
+            if (a_max > 0 && result.size() == a_max) break;
+        }
+    }
+
+    return result;
+}
+
+std::vector<TESObjectBOOK*> GetAllSpellBooks(StaticFunctionTag*, BSFixedString a_skill = "", int a_minSkill = 0,
+                                             std::string a_minSkillComp = "=", int a_max = 0) {
+    std::vector<TESObjectBOOK*> result;
+    const auto& all = TESDataHandler::GetSingleton()->GetFormArray<TESObjectBOOK>();
+    ActorValue av = ActorValue::kNone;
+    if (a_skill == "destruction") {
+        av = ActorValue::kDestruction;
+    } else if (a_skill == "alteration") {
+        av = ActorValue::kAlteration;
+    } else if (a_skill == "conjuration") {
+        av = ActorValue::kConjuration;
+    } else if (a_skill == "restoration") {
+        av = ActorValue::kRestoration;
+    } else if (a_skill == "illusion") {
+        av = ActorValue::kIllusion;
+    }
+
+    for (auto book : all) {
+        if (!book->TeachesSpell()) continue;
+        if (auto spell = book->GetSpell(); spell) {
+            if (av != ActorValue::kNone && spell->GetAssociatedSkill() != av) continue;
+            if (a_minSkill > 0 && !compare(GetSpellMinimumSkillLevel(spell), a_minSkill, a_minSkillComp))
+                continue;
+            result.push_back(book);
+            if (a_max > 0 && result.size() == a_max) break;
+        }
+    }
+    return result;
+}
+
 bool PapyrusBinder(RE::BSScript::IVirtualMachine* vm) {
     std::string_view script = "Traits_Utils"sv;
 
@@ -178,6 +263,8 @@ bool PapyrusBinder(RE::BSScript::IVirtualMachine* vm) {
     vm->RegisterFunction("GetTraitsAtIndexes", script, GetTraitsAtIndexes);
     vm->RegisterFunction("InjectMasterofOne", script, InjectMasterofOne);
     vm->RegisterFunction("GetCurrentSkillInStatsMenu", script, GetCurrentSkillInStatsMenu);
+    vm->RegisterFunction("GetAllSpellBooks", script, GetAllSpellBooks);
+    vm->RegisterFunction("GetAllSpells", script, GetAllSpells);
 
     return false;
 }
